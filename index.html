@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Roblox-style Waiting / Loading — Coming Soon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0f1724;
+      --bg2:#071021;
+      --accent:#ff3b3b;
+      --neon:#00e5ff;
+      --soft:#9aa7b2;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      display:grid;
+      place-items:center;
+      font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      color: #e6eef8;
+      overflow:hidden;
+    }
+
+    /* Scene */
+    .stage{
+      width:920px;
+      max-width:92vw;
+      height:520px;
+      padding:28px;
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12));
+      box-shadow: 0 20px 60px rgba(3,8,20,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+      display:flex;
+      gap:24px;
+      align-items:center;
+      justify-content:space-between;
+      perspective:1200px;
+    }
+
+    /* Left: 3D block */
+    .scene-left{
+      width:52%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .platform{
+      width:300px;
+      height:18px;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(255,255,255,0.02));
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.6);
+      transform: translateY(120px);
+    }
+    .cube-wrap{
+      width:260px;
+      height:260px;
+      transform-style:preserve-3d;
+      transform-origin:center;
+      animation: float 3.8s ease-in-out infinite;
+    }
+    @keyframes float{
+      0%{transform: rotateX(12deg) rotateY(20deg) translateY(-6px)}
+      50%{transform: rotateX(6deg) rotateY(-18deg) translateY(-18px)}
+      100%{transform: rotateX(12deg) rotateY(20deg) translateY(-6px)}
+    }
+
+    .cube{
+      position:relative;
+      width:160px;
+      height:160px;
+      transform-style:preserve-3d;
+      transform: translateZ(0);
+      margin:auto;
+      filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
+    }
+    .face{
+      position:absolute;
+      width:100%;
+      height:100%;
+      left:0;top:0;
+      display:grid;place-items:center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight:700;
+      font-size:36px;
+      color:#071021;
+      border-radius:12px;
+      backface-visibility:hidden;
+    }
+    .face.front{transform: translateZ(80px); background: linear-gradient(180deg,#fff 0%, #ffdede 100%)}
+    .face.back{transform: rotateY(180deg) translateZ(80px); background: linear-gradient(180deg,#fff 0%, #ffe9d5 100%)}
+    .face.right{transform: rotateY(90deg) translateZ(80px); background: linear-gradient(180deg,#ffd 0%, #ffe9f0 100%)}
+    .face.left{transform: rotateY(-90deg) translateZ(80px); background: linear-gradient(180deg,#fff 0%, #e6f8ff 100%)}
+    .face.top{transform: rotateX(90deg) translateZ(80px); background: linear-gradient(180deg,#fff 0%, #eaf7e6 100%)}
+    .face.bottom{transform: rotateX(-90deg) translateZ(80px); background: linear-gradient(180deg,#fff 0%, #f2e6ff 100%)}
+
+    /* Small Roblox-ish sticker on front */
+    .roblox-logo{
+      width:66px;height:66px;border-radius:10px;
+      background: linear-gradient(180deg,var(--accent), #ff7b7b);
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-weight:800;font-family: 'Orbitron', sans-serif; font-size:38px;
+      transform: translateZ(10px) rotateZ(-14deg);
+      box-shadow: 0 6px 20px rgba(255,59,59,0.28), inset 0 -6px 18px rgba(255,255,255,0.1);
+    }
+
+    /* Right: text + loading */
+    .scene-right{
+      width:44%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:18px;
+      padding:12px 18px;
+    }
+    .headline{
+      font-family: 'Orbitron', sans-serif;
+      font-size:48px;
+      letter-spacing:6px;
+      text-transform:uppercase;
+      line-height:1;
+      margin-bottom:6px;
+      text-shadow: 0 6px 24px rgba(0,0,0,0.8), 0 0 18px rgba(0,229,255,0.06);
+      display:flex;align-items:center;gap:12px;
+    }
+    .neon{
+      color:transparent;
+      -webkit-text-stroke: 1px #bfeaff;
+      position:relative;
+    }
+    .neon::after{
+      content:'';position:absolute;left:0;right:0;bottom:-8px;height:10px;filter: blur(14px);background:linear-gradient(90deg,var(--neon), rgba(0,229,255,0.05));opacity:0.6;border-radius:6px;z-index:-1;
+    }
+
+    .sub{
+      color:var(--soft);
+      font-size:14px;
+      max-width:360px;
+    }
+
+    /* Loading */
+    .loader{
+      margin-top:6px;
+      width:100%;
+      max-width:420px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .progress{
+      width:100%;
+      height:14px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
+    }
+    .bar{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: linear-gradient(90deg,var(--neon), var(--accent));
+      box-shadow: 0 6px 18px rgba(0,229,255,0.08);
+      transition: width 0.6s cubic-bezier(.2,.9,.2,1);
+    }
+    .percent{
+      font-family: 'Orbitron', sans-serif;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      color:#bfeaff;
+    }
+
+    .dots{
+      display:flex;gap:10px;align-items:center;
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.06);box-shadow: 0 6px 18px rgba(0,0,0,0.6)}
+    .dot.animate{animation: pulse 1.2s infinite ease-in-out}
+    .dot.animate:nth-child(2){animation-delay:0.08s}
+    .dot.animate:nth-child(3){animation-delay:0.16s}
+    @keyframes pulse{
+      0%{transform:translateY(0);opacity:0.4}
+      50%{transform:translateY(-8px);opacity:1}
+      100%{transform:translateY(0);opacity:0.4}
+    }
+
+    /* small footer note */
+    .note{font-size:12px;color:#93a6b5;margin-top:6px}
+
+    /* responsive tweaks */
+    @media (max-width:760px){
+      .stage{flex-direction:column;gap:18px;height:auto;padding:18px}
+      .scene-left,.scene-right{width:100%}
+      .headline{font-size:32px}
+      .cube-wrap{width:200px;height:200px}
+      .cube{width:120px;height:120px}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="scene-left">
+      <div class="cube-wrap">
+        <div class="cube" id="cube">
+          <div class="face front"><div class="roblox-logo">R</div></div>
+          <div class="face back">R</div>
+          <div class="face right">R</div>
+          <div class="face left">R</div>
+          <div class="face top">R</div>
+          <div class="face bottom">R</div>
+        </div>
+      </div>
+      <div class="platform" aria-hidden="true"></div>
+    </div>
+
+    <div class="scene-right">
+      <div>
+        <div class="headline"><span class="neon">COMING</span> <span>SOON</span></div>
+        <div class="sub">We're building something fun and new — a Roblox experience is loading. Keep this page open and check back soon.</div>
+      </div>
+
+      <div class="loader">
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="bar" id="bar"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="percent" id="percent">0%</div>
+          <div class="dots" aria-hidden="true">
+            <div class="dot animate"></div>
+            <div class="dot animate"></div>
+            <div class="dot animate"></div>
+          </div>
+        </div>
+        <div class="note">Tip: This is a placeholder loading screen. Replace text & colors to match your game branding.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // animate cube rotation slightly with mouse (parallax)
+    const cube = document.getElementById('cube');
+    const wrap = document.querySelector('.cube-wrap');
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e)=>{
+      const rect = wrap.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+      mouseX = (e.clientX - cx) / rect.width * 30;
+      mouseY = (e.clientY - cy) / rect.height * -30;
+      cube.style.transform = `rotateX(${12 + mouseY}deg) rotateY(${20 + mouseX}deg)`;
+    });
+
+    // fake progress loader
+    const bar = document.getElementById('bar');
+    const percent = document.getElementById('percent');
+    let value = 0;
+    function step(){
+      const delta = Math.max(0.5, (100 - value) * 0.03);
+      value = Math.min(100, value + delta);
+      bar.style.width = value + '%';
+      percent.textContent = Math.floor(value) + '%';
+
+      // subtle cube spin when progress increases
+      const spin = 4 + (value/100)*18;
+      wrap.style.transform = `rotateX(${12 - value/40}deg) rotateY(${20 + value/25}deg) translateY(${ -6 - value/8 }px)`;
+
+      if(value < 100){
+        requestAnimationFrame(step);
+      } else {
+        // when done, keep a gentle glow & pulse
+        percent.textContent = 'Ready';
+        percent.style.color = 'var(--accent)';
+        bar.style.width = '100%';
+        // small finishing bounce
+        wrap.animate([
+          {transform: wrap.style.transform},
+          {transform: wrap.style.transform + ' translateY(-10px)'},
+          {transform: wrap.style.transform}
+        ],{duration:900,easing:'cubic-bezier(.2,.9,.2,1)'});
+      }
+    }
+    // start after small delay
+    setTimeout(()=>requestAnimationFrame(step),600);
+
+    // make Enter key re-run (for testing)
+    document.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ value = 0; bar.style.width='0%'; percent.textContent='0%'; requestAnimationFrame(step); } });
+  </script>
+</body>
+</html>
